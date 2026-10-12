@@ -1,0 +1,1347 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": 121,
+      "metadata": {
+        "id": "KVWYLiAPvcPf"
+      },
+      "outputs": [],
+      "source": [
+        "from sklearn.datasets import load_breast_cancer\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "from sklearn.tree import DecisionTreeClassifier\n",
+        "from sklearn.metrics import classification_report\n",
+        "from sklearn.ensemble import RandomForestClassifier\n",
+        "from sklearn.linear_model import LogisticRegression\n",
+        "from sklearn.neighbors import KNeighborsClassifier\n",
+        "\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.preprocessing import StandardScaler, LabelEncoder\n",
+        "from sklearn.metrics import accuracy_score, confusion_matrix, classification_report\n",
+        "\n",
+        "import seaborn as sn"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import seaborn as sns\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "import tensorflow as tf\n",
+        "from tensorflow import keras"
+      ],
+      "metadata": {
+        "id": "JiZphxJ9w4aN"
+      },
+      "execution_count": 122,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = pd.read_csv(\"/content/drive/MyDrive/Colab Notebooks/diabetes.csv\")\n",
+        "df"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 424
+        },
+        "id": "gLBDe8Cfw4Yc",
+        "outputId": "27c8ee00-af8c-4dd0-c47d-bb7d8eed5c2b"
+      },
+      "execution_count": 123,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "     Pregnancies  Glucose  BloodPressure  SkinThickness  Insulin   BMI  \\\n",
+              "0              6      148             72             35        0  33.6   \n",
+              "1              1       85             66             29        0  26.6   \n",
+              "2              8      183             64              0        0  23.3   \n",
+              "3              1       89             66             23       94  28.1   \n",
+              "4              0      137             40             35      168  43.1   \n",
+              "..           ...      ...            ...            ...      ...   ...   \n",
+              "763           10      101             76             48      180  32.9   \n",
+              "764            2      122             70             27        0  36.8   \n",
+              "765            5      121             72             23      112  26.2   \n",
+              "766            1      126             60              0        0  30.1   \n",
+              "767            1       93             70             31        0  30.4   \n",
+              "\n",
+              "     DiabetesPedigreeFunction  Age  Outcome  \n",
+              "0                       0.627   50        1  \n",
+              "1                       0.351   31        0  \n",
+              "2                       0.672   32        1  \n",
+              "3                       0.167   21        0  \n",
+              "4                       2.288   33        1  \n",
+              "..                        ...  ...      ...  \n",
+              "763                     0.171   63        0  \n",
+              "764                     0.340   27        0  \n",
+              "765                     0.245   30        0  \n",
+              "766                     0.349   47        1  \n",
+              "767                     0.315   23        0  \n",
+              "\n",
+              "[768 rows x 9 columns]"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-9c66b532-b349-4351-a00c-c736bab1aaad\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Pregnancies</th>\n",
+              "      <th>Glucose</th>\n",
+              "      <th>BloodPressure</th>\n",
+              "      <th>SkinThickness</th>\n",
+              "      <th>Insulin</th>\n",
+              "      <th>BMI</th>\n",
+              "      <th>DiabetesPedigreeFunction</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Outcome</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>6</td>\n",
+              "      <td>148</td>\n",
+              "      <td>72</td>\n",
+              "      <td>35</td>\n",
+              "      <td>0</td>\n",
+              "      <td>33.6</td>\n",
+              "      <td>0.627</td>\n",
+              "      <td>50</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>1</td>\n",
+              "      <td>85</td>\n",
+              "      <td>66</td>\n",
+              "      <td>29</td>\n",
+              "      <td>0</td>\n",
+              "      <td>26.6</td>\n",
+              "      <td>0.351</td>\n",
+              "      <td>31</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>8</td>\n",
+              "      <td>183</td>\n",
+              "      <td>64</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>23.3</td>\n",
+              "      <td>0.672</td>\n",
+              "      <td>32</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>1</td>\n",
+              "      <td>89</td>\n",
+              "      <td>66</td>\n",
+              "      <td>23</td>\n",
+              "      <td>94</td>\n",
+              "      <td>28.1</td>\n",
+              "      <td>0.167</td>\n",
+              "      <td>21</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>0</td>\n",
+              "      <td>137</td>\n",
+              "      <td>40</td>\n",
+              "      <td>35</td>\n",
+              "      <td>168</td>\n",
+              "      <td>43.1</td>\n",
+              "      <td>2.288</td>\n",
+              "      <td>33</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>763</th>\n",
+              "      <td>10</td>\n",
+              "      <td>101</td>\n",
+              "      <td>76</td>\n",
+              "      <td>48</td>\n",
+              "      <td>180</td>\n",
+              "      <td>32.9</td>\n",
+              "      <td>0.171</td>\n",
+              "      <td>63</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>764</th>\n",
+              "      <td>2</td>\n",
+              "      <td>122</td>\n",
+              "      <td>70</td>\n",
+              "      <td>27</td>\n",
+              "      <td>0</td>\n",
+              "      <td>36.8</td>\n",
+              "      <td>0.340</td>\n",
+              "      <td>27</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>765</th>\n",
+              "      <td>5</td>\n",
+              "      <td>121</td>\n",
+              "      <td>72</td>\n",
+              "      <td>23</td>\n",
+              "      <td>112</td>\n",
+              "      <td>26.2</td>\n",
+              "      <td>0.245</td>\n",
+              "      <td>30</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>766</th>\n",
+              "      <td>1</td>\n",
+              "      <td>126</td>\n",
+              "      <td>60</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>30.1</td>\n",
+              "      <td>0.349</td>\n",
+              "      <td>47</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>767</th>\n",
+              "      <td>1</td>\n",
+              "      <td>93</td>\n",
+              "      <td>70</td>\n",
+              "      <td>31</td>\n",
+              "      <td>0</td>\n",
+              "      <td>30.4</td>\n",
+              "      <td>0.315</td>\n",
+              "      <td>23</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>768 rows × 9 columns</p>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-9c66b532-b349-4351-a00c-c736bab1aaad')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-9c66b532-b349-4351-a00c-c736bab1aaad button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-9c66b532-b349-4351-a00c-c736bab1aaad');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "  <div id=\"id_d74bbcce-3574-4d35-a267-886e9a500da6\">\n",
+              "    <style>\n",
+              "      .colab-df-generate {\n",
+              "        background-color: #E8F0FE;\n",
+              "        border: none;\n",
+              "        border-radius: 50%;\n",
+              "        cursor: pointer;\n",
+              "        display: none;\n",
+              "        fill: #1967D2;\n",
+              "        height: 32px;\n",
+              "        padding: 0 0 0 0;\n",
+              "        width: 32px;\n",
+              "      }\n",
+              "\n",
+              "      .colab-df-generate:hover {\n",
+              "        background-color: #E2EBFA;\n",
+              "        box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "        fill: #174EA6;\n",
+              "      }\n",
+              "\n",
+              "      [theme=dark] .colab-df-generate {\n",
+              "        background-color: #3B4455;\n",
+              "        fill: #D2E3FC;\n",
+              "      }\n",
+              "\n",
+              "      [theme=dark] .colab-df-generate:hover {\n",
+              "        background-color: #434B5C;\n",
+              "        box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "        filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "        fill: #FFFFFF;\n",
+              "      }\n",
+              "    </style>\n",
+              "    <button class=\"colab-df-generate\" onclick=\"generateWithVariable('df')\"\n",
+              "            title=\"Generate code using this dataframe.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M7,19H8.4L18.45,9,17,7.55,7,17.6ZM5,21V16.75L18.45,3.32a2,2,0,0,1,2.83,0l1.4,1.43a1.91,1.91,0,0,1,.58,1.4,1.91,1.91,0,0,1-.58,1.4L9.25,21ZM18.45,9,17,7.55Zm-12,3A5.31,5.31,0,0,0,4.9,8.1,5.31,5.31,0,0,0,1,6.5,5.31,5.31,0,0,0,4.9,4.9,5.31,5.31,0,0,0,6.5,1,5.31,5.31,0,0,0,8.1,4.9,5.31,5.31,0,0,0,12,6.5,5.46,5.46,0,0,0,6.5,12Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "    <script>\n",
+              "      (() => {\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#id_d74bbcce-3574-4d35-a267-886e9a500da6 button.colab-df-generate');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      buttonEl.onclick = () => {\n",
+              "        google.colab.notebook.generateWithVariable('df');\n",
+              "      }\n",
+              "      })();\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "df",
+              "summary": "{\n  \"name\": \"df\",\n  \"rows\": 768,\n  \"fields\": [\n    {\n      \"column\": \"Pregnancies\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 3,\n        \"min\": 0,\n        \"max\": 17,\n        \"num_unique_values\": 17,\n        \"samples\": [\n          6,\n          1,\n          3\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Glucose\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 31,\n        \"min\": 0,\n        \"max\": 199,\n        \"num_unique_values\": 136,\n        \"samples\": [\n          151,\n          101,\n          112\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"BloodPressure\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 19,\n        \"min\": 0,\n        \"max\": 122,\n        \"num_unique_values\": 47,\n        \"samples\": [\n          86,\n          46,\n          85\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"SkinThickness\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 15,\n        \"min\": 0,\n        \"max\": 99,\n        \"num_unique_values\": 51,\n        \"samples\": [\n          7,\n          12,\n          48\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Insulin\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 115,\n        \"min\": 0,\n        \"max\": 846,\n        \"num_unique_values\": 186,\n        \"samples\": [\n          52,\n          41,\n          183\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"BMI\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 7.8841603203754405,\n        \"min\": 0.0,\n        \"max\": 67.1,\n        \"num_unique_values\": 248,\n        \"samples\": [\n          19.9,\n          31.0,\n          38.1\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"DiabetesPedigreeFunction\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0.33132859501277484,\n        \"min\": 0.078,\n        \"max\": 2.42,\n        \"num_unique_values\": 517,\n        \"samples\": [\n          1.731,\n          0.426,\n          0.138\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Age\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 11,\n        \"min\": 21,\n        \"max\": 81,\n        \"num_unique_values\": 52,\n        \"samples\": [\n          60,\n          47,\n          72\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Outcome\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0,\n        \"min\": 0,\n        \"max\": 1,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          0,\n          1\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {},
+          "execution_count": 123
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X = df.drop(\"Outcome\", axis=1)\n",
+        "y = df[\"Outcome\"]"
+      ],
+      "metadata": {
+        "id": "UvDhzyS7xEtb"
+      },
+      "execution_count": 124,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X_train,X_test, y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=0)"
+      ],
+      "metadata": {
+        "id": "F_hhGl25xErX"
+      },
+      "execution_count": 125,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X_train.shape, X_test.shape, y_train.shape, y_test.shape"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "sRjOs0inxEpQ",
+        "outputId": "ece4434d-1101-47a7-cb40-3c03e7e2efeb"
+      },
+      "execution_count": 126,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "((614, 8), (154, 8), (614,), (154,))"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 126
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Classification"
+      ],
+      "metadata": {
+        "id": "w5xReUZhyRQP"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model_dt = DecisionTreeClassifier()\n",
+        "model_dt.fit(X_train, y_train)\n",
+        "\n",
+        "pred_dt = model_dt.predict(X_test)\n",
+        "print(classification_report(y_test, pred_dt))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "kR6kpdvExEm6",
+        "outputId": "a04dce7f-30b9-44c8-8a24-068ddc9ef9d9"
+      },
+      "execution_count": 127,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.86      0.81      0.84       107\n",
+            "           1       0.62      0.70      0.66        47\n",
+            "\n",
+            "    accuracy                           0.78       154\n",
+            "   macro avg       0.74      0.76      0.75       154\n",
+            "weighted avg       0.79      0.78      0.78       154\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model_rf= RandomForestClassifier()\n",
+        "model_rf.fit(X_train, y_train)\n",
+        "\n",
+        "pred_rf = model_rf.predict(X_test)\n",
+        "print(classification_report(y_test, pred_rf))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "e2SrcBmuxEkF",
+        "outputId": "80970bc4-d4b6-4dd9-cfd9-5cb7af58c63d"
+      },
+      "execution_count": 128,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.87      0.86      0.86       107\n",
+            "           1       0.69      0.70      0.69        47\n",
+            "\n",
+            "    accuracy                           0.81       154\n",
+            "   macro avg       0.78      0.78      0.78       154\n",
+            "weighted avg       0.81      0.81      0.81       154\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model_lr = LogisticRegression(max_iter=200)\n",
+        "model_lr.fit(X_train, y_train)\n",
+        "\n",
+        "pred_lr = model_lr.predict(X_test)\n",
+        "print(classification_report(y_test, pred_lr))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5vqHvFHJxZAJ",
+        "outputId": "c043bdef-6f0c-4263-c3a3-efb7996c1941"
+      },
+      "execution_count": 129,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.84      0.92      0.88       107\n",
+            "           1       0.76      0.62      0.68        47\n",
+            "\n",
+            "    accuracy                           0.82       154\n",
+            "   macro avg       0.80      0.77      0.78       154\n",
+            "weighted avg       0.82      0.82      0.82       154\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model_kn = KNeighborsClassifier()\n",
+        "model_kn.fit(X_train, y_train)\n",
+        "\n",
+        "pred_kn = model_kn.predict(X_test)\n",
+        "print(classification_report(y_test, pred_kn))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "hkhydQbjxEhM",
+        "outputId": "7a819e22-c58e-4041-84b7-dacd2d1e67dd"
+      },
+      "execution_count": 130,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.83      0.81      0.82       107\n",
+            "           1       0.59      0.62      0.60        47\n",
+            "\n",
+            "    accuracy                           0.75       154\n",
+            "   macro avg       0.71      0.72      0.71       154\n",
+            "weighted avg       0.76      0.75      0.75       154\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "DL"
+      ],
+      "metadata": {
+        "id": "Q0OOc91uyTpA"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X = df.drop(\"Outcome\", axis=1).values\n",
+        "y = df[\"Outcome\"].values"
+      ],
+      "metadata": {
+        "id": "mjH_ADNLxiqK"
+      },
+      "execution_count": 131,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)"
+      ],
+      "metadata": {
+        "id": "zjSdKYF_xYz6"
+      },
+      "execution_count": 132,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "scaler = StandardScaler()\n",
+        "X_train = scaler.fit_transform(X_train)\n",
+        "X_test = scaler.transform(X_test)"
+      ],
+      "metadata": {
+        "id": "3iY3Bd4OxYxS"
+      },
+      "execution_count": 133,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "DL_Binary classification"
+      ],
+      "metadata": {
+        "id": "9IeBNtd22RpU"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model = tf.keras.Sequential()\n",
+        "model.add(tf.keras.layers.Dense(32, activation=\"relu\", input_shape=(8,)))\n",
+        "model.add(tf.keras.layers.Dense(16, activation=\"relu\"))\n",
+        "model.add(tf.keras.layers.Dense(1, activation=\"sigmoid\"))\n",
+        "\n",
+        "model.compile(\n",
+        "    optimizer=\"adam\",\n",
+        "    loss=\"binary_crossentropy\",\n",
+        "    metrics=[\"accuracy\"]\n",
+        ")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "V3hS9EMOxYvO",
+        "outputId": "d68b7141-4e65-4ba6-800f-09f46e6aa24a"
+      },
+      "execution_count": 134,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.13/dist-packages/keras/src/layers/core/dense.py:106: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.\n",
+            "  super().__init__(activity_regularizer=activity_regularizer, **kwargs)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.compile(optimizer=\"adam\", loss=\"binary_crossentropy\", metrics=[\"accuracy\"])"
+      ],
+      "metadata": {
+        "id": "92Fg6SjkypWW"
+      },
+      "execution_count": 135,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.summary()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 225
+        },
+        "id": "96WRIQXCypQl",
+        "outputId": "eaa351b2-2382-48c7-a9f2-5b5946124af2"
+      },
+      "execution_count": 136,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1mModel: \"sequential_7\"\u001b[0m\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\">Model: \"sequential_7\"</span>\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n",
+              "┃\u001b[1m \u001b[0m\u001b[1mLayer (type)                   \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mOutput Shape          \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1m      Param #\u001b[0m\u001b[1m \u001b[0m┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n",
+              "│ dense_20 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m32\u001b[0m)             │           \u001b[38;5;34m288\u001b[0m │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_21 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m16\u001b[0m)             │           \u001b[38;5;34m528\u001b[0m │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_22 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m1\u001b[0m)              │            \u001b[38;5;34m17\u001b[0m │\n",
+              "└─────────────────────────────────┴────────────────────────┴───────────────┘\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n",
+              "┃<span style=\"font-weight: bold\"> Layer (type)                    </span>┃<span style=\"font-weight: bold\"> Output Shape           </span>┃<span style=\"font-weight: bold\">       Param # </span>┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n",
+              "│ dense_20 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">32</span>)             │           <span style=\"color: #00af00; text-decoration-color: #00af00\">288</span> │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_21 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">16</span>)             │           <span style=\"color: #00af00; text-decoration-color: #00af00\">528</span> │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_22 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">1</span>)              │            <span style=\"color: #00af00; text-decoration-color: #00af00\">17</span> │\n",
+              "└─────────────────────────────────┴────────────────────────┴───────────────┘\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Total params: \u001b[0m\u001b[38;5;34m833\u001b[0m (3.25 KB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Total params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">833</span> (3.25 KB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Trainable params: \u001b[0m\u001b[38;5;34m833\u001b[0m (3.25 KB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">833</span> (3.25 KB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Non-trainable params: \u001b[0m\u001b[38;5;34m0\u001b[0m (0.00 B)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Non-trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">0</span> (0.00 B)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "y_prob = model.predict(X_test)\n",
+        "y_pred = (y_prob >= 0.5).astype(int).flatten()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "QeftTR7jypL_",
+        "outputId": "45df99f3-b959-4d8a-ec04-6bc884a108e4"
+      },
+      "execution_count": 137,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m5/5\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m0s\u001b[0m 24ms/step\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "accuracy = accuracy_score(y_test, y_pred)\n",
+        "print(\"\\nAccuracy =\", accuracy)\n",
+        "print(\"\\nConfusion Matrix\")\n",
+        "print(confusion_matrix(y_test, y_pred))\n",
+        "print(\"\\nClassification Report\")\n",
+        "print(classification_report(y_test, y_pred))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "L5wTYwoRy0Hg",
+        "outputId": "4c261e1f-7462-48eb-d8d4-e89df4abcb48"
+      },
+      "execution_count": 138,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Accuracy = 0.5714285714285714\n",
+            "\n",
+            "Confusion Matrix\n",
+            "[[81 19]\n",
+            " [47  7]]\n",
+            "\n",
+            "Classification Report\n",
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.63      0.81      0.71       100\n",
+            "           1       0.27      0.13      0.17        54\n",
+            "\n",
+            "    accuracy                           0.57       154\n",
+            "   macro avg       0.45      0.47      0.44       154\n",
+            "weighted avg       0.51      0.57      0.52       154\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "DL_multi-class, single-label"
+      ],
+      "metadata": {
+        "id": "2moGlOg-2s5J"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model = tf.keras.Sequential()\n",
+        "model.add(tf.keras.layers.Dense(32, activation=\"relu\", input_shape=(8,)))\n",
+        "model.add(tf.keras.layers.Dense(16, activation=\"relu\"))\n",
+        "model.add(tf.keras.layers.Dense(1, activation=\"softmax\"))\n",
+        "\n",
+        "model.compile(\n",
+        "    optimizer=\"adam\",\n",
+        "    loss=\"categorical_crossentropy\",\n",
+        "    metrics=[\"accuracy\"]\n",
+        ")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "6O5Khm6b3QKX",
+        "outputId": "ffe1cb1a-9a85-435e-bef2-5bab75b4c5e0"
+      },
+      "execution_count": 139,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.13/dist-packages/keras/src/layers/core/dense.py:106: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.\n",
+            "  super().__init__(activity_regularizer=activity_regularizer, **kwargs)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.compile(optimizer=\"adam\", loss=\"categorical_crossentropy\", metrics=[\"accuracy\"])"
+      ],
+      "metadata": {
+        "id": "QvzlVRVp3QHc"
+      },
+      "execution_count": 140,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.summary()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 225
+        },
+        "id": "jJaRsvzT3QFo",
+        "outputId": "7640ad95-57e3-4982-aedc-1c94b8d71d8f"
+      },
+      "execution_count": 141,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1mModel: \"sequential_8\"\u001b[0m\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\">Model: \"sequential_8\"</span>\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n",
+              "┃\u001b[1m \u001b[0m\u001b[1mLayer (type)                   \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mOutput Shape          \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1m      Param #\u001b[0m\u001b[1m \u001b[0m┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n",
+              "│ dense_23 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m32\u001b[0m)             │           \u001b[38;5;34m288\u001b[0m │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_24 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m16\u001b[0m)             │           \u001b[38;5;34m528\u001b[0m │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_25 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m1\u001b[0m)              │            \u001b[38;5;34m17\u001b[0m │\n",
+              "└─────────────────────────────────┴────────────────────────┴───────────────┘\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n",
+              "┃<span style=\"font-weight: bold\"> Layer (type)                    </span>┃<span style=\"font-weight: bold\"> Output Shape           </span>┃<span style=\"font-weight: bold\">       Param # </span>┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n",
+              "│ dense_23 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">32</span>)             │           <span style=\"color: #00af00; text-decoration-color: #00af00\">288</span> │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_24 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">16</span>)             │           <span style=\"color: #00af00; text-decoration-color: #00af00\">528</span> │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_25 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">1</span>)              │            <span style=\"color: #00af00; text-decoration-color: #00af00\">17</span> │\n",
+              "└─────────────────────────────────┴────────────────────────┴───────────────┘\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Total params: \u001b[0m\u001b[38;5;34m833\u001b[0m (3.25 KB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Total params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">833</span> (3.25 KB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Trainable params: \u001b[0m\u001b[38;5;34m833\u001b[0m (3.25 KB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">833</span> (3.25 KB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Non-trainable params: \u001b[0m\u001b[38;5;34m0\u001b[0m (0.00 B)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Non-trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">0</span> (0.00 B)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "y_prob = model.predict(X_test)\n",
+        "y_pred = (y_prob >= 0.5).astype(int).flatten()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "91Q_2kOy3QDC",
+        "outputId": "c2e53855-ac27-4199-b4b4-964ebcd3d195"
+      },
+      "execution_count": 142,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m5/5\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m0s\u001b[0m 14ms/step\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.13/dist-packages/keras/src/ops/nn.py:947: UserWarning: You are using a softmax over axis -1 of a tensor of shape (32, 1). This axis has size 1. The softmax operation will always return the value 1, which is likely not what you intended. Did you mean to use a sigmoid instead?\n",
+            "  warnings.warn(\n",
+            "/usr/local/lib/python3.13/dist-packages/keras/src/ops/nn.py:947: UserWarning: You are using a softmax over axis -1 of a tensor of shape (None, 1). This axis has size 1. The softmax operation will always return the value 1, which is likely not what you intended. Did you mean to use a sigmoid instead?\n",
+            "  warnings.warn(\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "accuracy = accuracy_score(y_test, y_pred)\n",
+        "print(\"\\nAccuracy =\", accuracy)\n",
+        "print(\"\\nConfusion Matrix\")\n",
+        "print(confusion_matrix(y_test, y_pred))\n",
+        "print(\"\\nClassification Report\")\n",
+        "print(classification_report(y_test, y_pred))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "VuHmvsor3P5r",
+        "outputId": "761d27ee-70cf-40f8-fb88-96cd0ef87062"
+      },
+      "execution_count": 143,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Accuracy = 0.35064935064935066\n",
+            "\n",
+            "Confusion Matrix\n",
+            "[[  0 100]\n",
+            " [  0  54]]\n",
+            "\n",
+            "Classification Report\n",
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.00      0.00      0.00       100\n",
+            "           1       0.35      1.00      0.52        54\n",
+            "\n",
+            "    accuracy                           0.35       154\n",
+            "   macro avg       0.18      0.50      0.26       154\n",
+            "weighted avg       0.12      0.35      0.18       154\n",
+            "\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.13/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.\n",
+            "  _warn_prf(average, modifier, f\"{metric.capitalize()} is\", len(result))\n",
+            "/usr/local/lib/python3.13/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.\n",
+            "  _warn_prf(average, modifier, f\"{metric.capitalize()} is\", len(result))\n",
+            "/usr/local/lib/python3.13/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.\n",
+            "  _warn_prf(average, modifier, f\"{metric.capitalize()} is\", len(result))\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "DL_Regression"
+      ],
+      "metadata": {
+        "id": "ZT4-qNsv2IiA"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model = tf.keras.Sequential()\n",
+        "model.add(tf.keras.layers.Dense(32, activation=\"relu\", input_shape=(8,)))\n",
+        "model.add(tf.keras.layers.Dense(16, activation=\"relu\"))\n",
+        "model.add(tf.keras.layers.Dense(1))\n",
+        "\n",
+        "model.compile(\n",
+        "    optimizer=\"adam\",\n",
+        "    loss=\"mse\",\n",
+        "    metrics=[\"mae\"]\n",
+        ")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "I-bbad6Z1Sji",
+        "outputId": "bd12a614-7f96-41d2-c1bb-7affbea83fec"
+      },
+      "execution_count": 144,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.13/dist-packages/keras/src/layers/core/dense.py:106: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.\n",
+            "  super().__init__(activity_regularizer=activity_regularizer, **kwargs)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.compile(optimizer=\"adam\", loss=\"mse\", metrics=[\"accuracy\"])"
+      ],
+      "metadata": {
+        "id": "k1Q6FTbu1tEZ"
+      },
+      "execution_count": 145,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.summary()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 225
+        },
+        "id": "IRwJSJLu1tBY",
+        "outputId": "d36c8035-1c83-470f-b1cf-63d6d5e1e05e"
+      },
+      "execution_count": 146,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1mModel: \"sequential_9\"\u001b[0m\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\">Model: \"sequential_9\"</span>\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n",
+              "┃\u001b[1m \u001b[0m\u001b[1mLayer (type)                   \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mOutput Shape          \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1m      Param #\u001b[0m\u001b[1m \u001b[0m┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n",
+              "│ dense_26 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m32\u001b[0m)             │           \u001b[38;5;34m288\u001b[0m │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_27 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m16\u001b[0m)             │           \u001b[38;5;34m528\u001b[0m │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_28 (\u001b[38;5;33mDense\u001b[0m)                │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m1\u001b[0m)              │            \u001b[38;5;34m17\u001b[0m │\n",
+              "└─────────────────────────────────┴────────────────────────┴───────────────┘\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n",
+              "┃<span style=\"font-weight: bold\"> Layer (type)                    </span>┃<span style=\"font-weight: bold\"> Output Shape           </span>┃<span style=\"font-weight: bold\">       Param # </span>┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n",
+              "│ dense_26 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">32</span>)             │           <span style=\"color: #00af00; text-decoration-color: #00af00\">288</span> │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_27 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">16</span>)             │           <span style=\"color: #00af00; text-decoration-color: #00af00\">528</span> │\n",
+              "├─────────────────────────────────┼────────────────────────┼───────────────┤\n",
+              "│ dense_28 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">1</span>)              │            <span style=\"color: #00af00; text-decoration-color: #00af00\">17</span> │\n",
+              "└─────────────────────────────────┴────────────────────────┴───────────────┘\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Total params: \u001b[0m\u001b[38;5;34m833\u001b[0m (3.25 KB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Total params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">833</span> (3.25 KB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Trainable params: \u001b[0m\u001b[38;5;34m833\u001b[0m (3.25 KB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">833</span> (3.25 KB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Non-trainable params: \u001b[0m\u001b[38;5;34m0\u001b[0m (0.00 B)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Non-trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">0</span> (0.00 B)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "y_prob = model.predict(X_test)\n",
+        "y_pred = (y_prob >= 0.5).astype(int).flatten()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "LK_tDiUj1zZG",
+        "outputId": "33db92e9-974d-4fe1-e053-d016a2f99707"
+      },
+      "execution_count": 147,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m5/5\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m0s\u001b[0m 23ms/step\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "accuracy = accuracy_score(y_test, y_pred)\n",
+        "print(\"\\nAccuracy =\", accuracy)\n",
+        "print(\"\\nConfusion Matrix\")\n",
+        "print(confusion_matrix(y_test, y_pred))\n",
+        "print(\"\\nClassification Report\")\n",
+        "print(classification_report(y_test, y_pred))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "p8-5le1B13E4",
+        "outputId": "ddbc99a5-b1ea-4d29-c576-a4771689aca0"
+      },
+      "execution_count": 148,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Accuracy = 0.5064935064935064\n",
+            "\n",
+            "Confusion Matrix\n",
+            "[[49 51]\n",
+            " [25 29]]\n",
+            "\n",
+            "Classification Report\n",
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.66      0.49      0.56       100\n",
+            "           1       0.36      0.54      0.43        54\n",
+            "\n",
+            "    accuracy                           0.51       154\n",
+            "   macro avg       0.51      0.51      0.50       154\n",
+            "weighted avg       0.56      0.51      0.52       154\n",
+            "\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
